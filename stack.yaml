@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Zearch engine stack
+
+Resources:
+  IndexQueue:
+    Type: AWS::SQS::Queue
+    Properties: 
+      MessageRetentionPeriod: 86400 # One day retention period
+      QueueName: IndexQueue
+      ReceiveMessageWaitTimeSeconds: 20
+      SqsManagedSseEnabled: false
+  SpiderRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SpiderRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: SpiderPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+                - sqs:SendMessageBatch
+              Resource: !GetAtt IndexQueue.Arn
+  EngineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EngineRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: EnginePolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - sqs:ReceiveMessage
+                - sqs:DeleteMessage
+                - sqs:DeleteMessageBatch
+              Resource: !GetAtt IndexQueue.Arn
