@@ -10,6 +10,7 @@ Resources:
       QueueName: IndexQueue
       ReceiveMessageWaitTimeSeconds: 20
       SqsManagedSseEnabled: false
+  
   SpiderRole:
     Type: AWS::IAM::Role
     Properties:
@@ -55,3 +56,30 @@ Resources:
                 - sqs:DeleteMessage
                 - sqs:DeleteMessageBatch
               Resource: !GetAtt IndexQueue.Arn
+
+  SpiderLaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: ami-0e33e5fdabd319577
+      InstanceType: t3a.nano
+      UserData: !Base64 |
+          #!/bin/bash
+          echo "Running startup script"
+          touch hello_world.txt
+          sudo yum update -y
+          sudo yum install git -y
+          sudo amazon-linux-extras install java-openjdk11 -y
+          sudo yum install java-11-devel -y
+          git clone https://github.com/zawie/zearch-engine.git
+          touch goodbye_world.txt
+          echo "Finishing startup script"
+  SpiderAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones:
+        - us-west-2a 
+        - us-west-2b 
+        - us-west-2c
+      LaunchConfigurationName: !Ref SpiderLaunchConfiguration
+      MinSize: '1'
+      MaxSize: '2'
