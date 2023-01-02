@@ -10,7 +10,7 @@ Resources:
       QueueName: IndexQueue
       ReceiveMessageWaitTimeSeconds: 20
       SqsManagedSseEnabled: false
-  
+
   SpiderRole:
     Type: AWS::IAM::Role
     Properties:
@@ -75,6 +75,7 @@ Resources:
           sudo yum install git -y
           sudo amazon-linux-extras install java-openjdk11 -y
           sudo yum install java-11-devel -y
+          cd ~
           git clone https://github.com/zawie/zearch-engine.git
           cd zearch-engine
           make build-crawler
