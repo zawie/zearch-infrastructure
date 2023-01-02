@@ -56,12 +56,19 @@ Resources:
                 - sqs:DeleteMessage
                 - sqs:DeleteMessageBatch
               Resource: !GetAtt IndexQueue.Arn
-
+  SpiderInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      InstanceProfileName: SpiderInstanceProfile
+      Path: /
+      Roles: 
+        - !Ref SpiderRole
   SpiderLaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       ImageId: ami-0e33e5fdabd319577
-      InstanceType: t3a.nano
+      InstanceType: t4g.nano
+      IamInstanceProfile: !Ref SpiderInstanceProfile
       UserData: !Base64 |
           #!/bin/bash
           echo "Running startup script"
@@ -81,5 +88,6 @@ Resources:
         - us-west-2b 
         - us-west-2c
       LaunchConfigurationName: !Ref SpiderLaunchConfiguration
-      MinSize: '1'
-      MaxSize: '2'
+      MinSize: "2"
+      MaxSize: "2"
+      DesiredCapacity: "2"
