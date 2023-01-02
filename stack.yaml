@@ -71,15 +71,16 @@ Resources:
       IamInstanceProfile: !Ref SpiderInstanceProfile
       UserData: !Base64 |
           #!/bin/bash
-          echo "Running startup script"
-          touch hello_world.txt
           sudo yum update -y
           sudo yum install git -y
           sudo amazon-linux-extras install java-openjdk11 -y
           sudo yum install java-11-devel -y
           git clone https://github.com/zawie/zearch-engine.git
-          touch goodbye_world.txt
-          echo "Finishing startup script"
+          cd zearch-engine
+          make build-crawler
+          ./scripts/crawler/main.sh https://en.wikipedia.org/wiki/List_of_most_visited_websites
+          
+
   SpiderAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
